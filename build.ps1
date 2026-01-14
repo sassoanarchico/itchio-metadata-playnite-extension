@@ -55,7 +55,14 @@ if ($CreatePackage) {
         $filesToInclude += "$outputDir\icon.png"
     }
     
-    Compress-Archive -Path $filesToInclude -DestinationPath $packageName -Force
+    # Create as .zip first, then rename to .pext (PowerShell doesn't support .pext extension directly)
+    $tempZip = "ItchioMetadata.zip"
+    Compress-Archive -Path $filesToInclude -DestinationPath $tempZip -Force
+    
+    # Rename to .pext
+    if (Test-Path $tempZip) {
+        Move-Item -Path $tempZip -Destination $packageName -Force
+    }
     
     if (Test-Path $packageName) {
         Write-Host "Package created: $packageName" -ForegroundColor Green

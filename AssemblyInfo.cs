@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("ItchioMetadata")]
 [assembly: AssemblyDescription("itch.io Metadata Provider for Playnite")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("sassoanarchico")]
 [assembly: AssemblyProduct("ItchioMetadata")]
 [assembly: AssemblyCopyright("")]
 [assembly: AssemblyTrademark("")]
