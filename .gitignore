@@ -1,0 +1,32 @@
+# build output
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+
+# vs stuff
+.vs/
+*.user
+*.suo
+
+# nuget
+packages/
+*.nupkg
+
+# compiled
+*.dll
+*.pdb
+*.exe
+
+# playnite
+*.pext
+Playnite.SDK.dll
+
+# ide
+.idea/
+*.swp
+
+# os
+.DS_Store
+Thumbs.db
+desktop.ini
