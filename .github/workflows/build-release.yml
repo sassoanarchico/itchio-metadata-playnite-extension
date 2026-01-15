@@ -21,6 +21,9 @@ jobs:
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
 
+      - name: Setup NuGet
+        uses: nuget/setup-nuget@v2
+
       - name: Download Playnite SDK (for build)
         shell: pwsh
         env:
@@ -103,6 +106,12 @@ jobs:
 
           "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
           "TAG=v$version" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      - name: Restore NuGet packages
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          nuget restore "ItchioMetadata.sln"
 
       - name: Build (Release)
         shell: pwsh
