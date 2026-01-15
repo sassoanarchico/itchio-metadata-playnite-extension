@@ -1,0 +1,147 @@
+name: Build and Release .pext
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  build-release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Download Playnite SDK (for build)
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          # Use GitHub CLI to download assets (more reliable than raw HTTP in CI environments).
+          $repo = "JosefNemec/Playnite"
+          $tmp = $env:RUNNER_TEMP
+
+          Write-Host "Querying latest Playnite release assets from $repo ..."
+          $assetNames = gh api "repos/$repo/releases/latest" --jq ".assets[].name"
+          if (-not $assetNames) { throw "No assets returned from releases/latest." }
+
+          Write-Host "Assets:"
+          $assetNames | ForEach-Object { Write-Host "  - $_" }
+
+          # Prefer explicit SDK/Portable if present, otherwise fall back to full Playnite archive.
+          $assetToDownload = $null
+          
+          # Try SDK first
+          $assetToDownload = $assetNames | Where-Object { $_ -like "PlayniteSDK*" -and ($_ -like "*.zip" -or $_ -like "*.7z") } | Select-Object -First 1
+          if ($assetToDownload) {
+            Write-Host "Selected SDK asset: $assetToDownload"
+          } else {
+            # Try Portable
+            $assetToDownload = $assetNames | Where-Object { $_ -like "PlaynitePortable*" -and ($_ -like "*.zip" -or $_ -like "*.7z") } | Select-Object -First 1
+            if ($assetToDownload) {
+              Write-Host "Selected Portable asset: $assetToDownload"
+            } else {
+              # Try versioned archive (e.g., 10.47.7z)
+              $assetToDownload = $assetNames | Where-Object { $_ -match '^\d+\.\d+\.(zip|7z)$' } | Select-Object -First 1
+              if ($assetToDownload) {
+                Write-Host "Selected versioned archive: $assetToDownload"
+              }
+            }
+          }
+
+          if (-not $assetToDownload) {
+            throw "Could not find a suitable Playnite asset (SDK/Portable/full archive zip/7z) in latest release."
+          }
+
+          Write-Host "Downloading asset via gh..."
+          gh release download --repo $repo --pattern $assetToDownload --dir $tmp --clobber
+
+          $archivePath = Join-Path $tmp $assetToDownload
+          if (-not (Test-Path $archivePath)) { throw "Downloaded archive not found: $archivePath" }
+
+          Write-Host "Downloaded: $archivePath"
+
+          $extractDir = Join-Path $env:RUNNER_TEMP "playnite"
+          if (Test-Path $extractDir) { Remove-Item $extractDir -Recurse -Force }
+
+          if ($archivePath.ToLowerInvariant().EndsWith(".zip")) {
+            Expand-Archive -Path $archivePath -DestinationPath $extractDir -Force
+          } elseif ($archivePath.ToLowerInvariant().EndsWith(".7z")) {
+            $sevenZip = Get-Command "7z" -ErrorAction SilentlyContinue
+            if (-not $sevenZip) { throw "7z not found on runner; cannot extract .7z asset." }
+            & 7z x $archivePath ("-o$extractDir") -y | Out-Null
+          } else {
+            throw "Unsupported archive type: $archivePath"
+          }
+
+          $sdk = Get-ChildItem -Path $extractDir -Recurse -Filter "Playnite.SDK.dll" | Select-Object -First 1
+          if (-not $sdk) { throw "Playnite.SDK.dll not found in extracted Playnite zip." }
+
+          $destDir = Join-Path $env:LOCALAPPDATA "Playnite"
+          New-Item -ItemType Directory -Force -Path $destDir | Out-Null
+          Copy-Item -Force -Path $sdk.FullName -Destination (Join-Path $destDir "Playnite.SDK.dll")
+
+      - name: Read version from extension.yaml
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $line = Select-String -Path "extension.yaml" -Pattern "^\s*Version\s*:" | Select-Object -First 1
+          if (-not $line) { throw "Version not found in extension.yaml" }
+          $version = ($line.Line -split ":", 2)[1].Trim()
+          if (-not $version) { throw "Parsed version is empty" }
+
+          "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "TAG=v$version" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      - name: Build (Release)
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          msbuild "ItchioMetadata.sln" /t:Rebuild /p:Configuration=Release /v:minimal
+
+      - name: Create .pext package
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $releaseDir = Join-Path $PWD "bin\Release"
+          if (-not (Test-Path $releaseDir)) { throw "Release output folder not found: $releaseDir" }
+
+          $zipFile = Join-Path $PWD ("ItchioMetadata_v{0}.zip" -f $env:VERSION)
+          $pextFile = Join-Path $PWD ("ItchioMetadata_v{0}.pext" -f $env:VERSION)
+
+          if (Test-Path $zipFile) { Remove-Item $zipFile -Force }
+          if (Test-Path $pextFile) { Remove-Item $pextFile -Force }
+
+          Compress-Archive -Path (Join-Path $releaseDir "*") -DestinationPath $zipFile -Force
+          Rename-Item -Path $zipFile -NewName ("ItchioMetadata_v{0}.pext" -f $env:VERSION)
+
+          if (-not (Test-Path $pextFile)) { throw ".pext was not created: $pextFile" }
+
+      - name: Create/Update GitHub Release and upload asset
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          $tag = $env:TAG
+          $file = "ItchioMetadata_v$($env:VERSION).pext"
+
+          # Create release if missing, otherwise keep it and just overwrite the asset.
+          gh release view $tag *> $null
+          if ($LASTEXITCODE -ne 0) {
+            gh release create $tag --title "ItchioMetadata $tag" --generate-notes
+          }
+
+          gh release upload $tag $file --clobber
