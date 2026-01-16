@@ -51,15 +51,25 @@ namespace ItchioMetadata
                     string gameName = options.GameData.Name;
                     if (!string.IsNullOrEmpty(gameName))
                     {
-                        var searchResults = scraper.SearchGames(gameName);
+                        var settings = plugin.GetSettings();
+                        int maxResults = settings?.MaxSearchResults ?? 20;
+                        var searchResults = scraper.SearchGames(gameName, maxResults);
                         if (searchResults.Any())
                         {
-                            if (searchResults.Count == 1 || !options.IsBackgroundDownload)
+                            bool useFirstResult = options.IsBackgroundDownload && (settings?.PreferFirstSearchResult ?? false);
+                            if (searchResults.Count == 1 || useFirstResult || !options.IsBackgroundDownload)
                             {
-                                var selectedGame = SelectGame(searchResults);
-                                if (selectedGame != null)
+                                if (useFirstResult || searchResults.Count == 1)
                                 {
-                                    gameMetadata = scraper.GetGameMetadata(selectedGame.Url);
+                                    gameMetadata = scraper.GetGameMetadata(searchResults.First().Url);
+                                }
+                                else
+                                {
+                                    var selectedGame = SelectGame(searchResults);
+                                    if (selectedGame != null)
+                                    {
+                                        gameMetadata = scraper.GetGameMetadata(selectedGame.Url);
+                                    }
                                 }
                             }
                             else
@@ -86,13 +96,39 @@ namespace ItchioMetadata
                     l.Url?.Contains("itch.io") == true);
                 if (itchioLink != null)
                 {
-                    return itchioLink.Url;
+                    string url = itchioLink.Url;
+                    // Normalize URL if needed
+                    if (!url.StartsWith("http://") && !url.StartsWith("https://"))
+                    {
+                        if (url.StartsWith("/"))
+                        {
+                            url = "https://itch.io" + url;
+                        }
+                        else
+                        {
+                            url = "https://itch.io/" + url;
+                        }
+                    }
+                    return url;
                 }
             }
 
             if (options.GameData.GameId?.Contains("itch.io") == true)
             {
-                return options.GameData.GameId;
+                string url = options.GameData.GameId;
+                // Normalize URL if needed
+                if (!url.StartsWith("http://") && !url.StartsWith("https://"))
+                {
+                    if (url.StartsWith("/"))
+                    {
+                        url = "https://itch.io" + url;
+                    }
+                    else
+                    {
+                        url = "https://itch.io/" + url;
+                    }
+                }
+                return url;
             }
 
             if (options.GameData.Source?.Name?.ToLower() == "itch.io" ||
@@ -100,9 +136,19 @@ namespace ItchioMetadata
             {
                 if (!string.IsNullOrEmpty(options.GameData.GameId))
                 {
-                    if (options.GameData.GameId.StartsWith("http"))
+                    string url = options.GameData.GameId;
+                    if (url.StartsWith("http"))
                     {
-                        return options.GameData.GameId;
+                        return url;
+                    }
+                    // Try to construct URL from GameId
+                    if (url.StartsWith("/"))
+                    {
+                        return "https://itch.io" + url;
+                    }
+                    else
+                    {
+                        return "https://itch.io/" + url;
                     }
                 }
             }
@@ -121,7 +167,9 @@ namespace ItchioMetadata
                 searchResults.Select(r => new GenericItemOption(r.Title, r.Description)).ToList(),
                 (searchTerm) =>
                 {
-                    var newResults = scraper.SearchGames(searchTerm);
+                    var settings = plugin.GetSettings();
+                    int maxResults = settings?.MaxSearchResults ?? 20;
+                    var newResults = scraper.SearchGames(searchTerm, maxResults);
                     return newResults.Select(r => new GenericItemOption(r.Title, r.Description)).ToList();
                 },
                 options.GameData.Name,
@@ -181,7 +229,16 @@ namespace ItchioMetadata
         public override string GetDescription(GetMetadataFieldArgs args)
         {
             EnsureDataFetched();
-            return gameMetadata?.Description;
+            var settings = plugin.GetSettings();
+            // Only use itch.io description if prefer setting is enabled or if no existing description
+            if (gameMetadata != null && !string.IsNullOrEmpty(gameMetadata.Description))
+            {
+                if (settings.PreferItchioDescription || string.IsNullOrEmpty(options.GameData.Description))
+                {
+                    return gameMetadata.Description;
+                }
+            }
+            return null;
         }
 
         public override IEnumerable<MetadataProperty> GetDevelopers(GetMetadataFieldArgs args)

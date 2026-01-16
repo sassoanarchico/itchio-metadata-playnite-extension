@@ -38,10 +38,11 @@ namespace ItchioMetadata
         public string GameUrl { get; set; }
     }
 
-    public class ItchioScraper
+    public class ItchioScraper : IDisposable
     {
         private static readonly ILogger logger = LogManager.GetLogger();
         private readonly HttpClient httpClient;
+        private bool disposed = false;
 
         private const string SearchUrlTemplate = "https://itch.io/search?q={0}";
         private const string UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
@@ -59,7 +60,7 @@ namespace ItchioMetadata
             httpClient.Timeout = TimeSpan.FromSeconds(30);
         }
 
-        public List<ItchioSearchResult> SearchGames(string searchTerm)
+        public List<ItchioSearchResult> SearchGames(string searchTerm, int maxResults = 20)
         {
             var results = new List<ItchioSearchResult>();
 
@@ -79,7 +80,7 @@ namespace ItchioMetadata
                 if (gameCells == null)
                     return results;
 
-                foreach (var cell in gameCells.Take(20)) // Limit to 20 results
+                foreach (var cell in gameCells.Take(maxResults))
                 {
                     try
                     {
@@ -132,6 +133,19 @@ namespace ItchioMetadata
 
             if (string.IsNullOrEmpty(title) || string.IsNullOrEmpty(url))
                 return null;
+
+            // Normalize relative URLs to absolute
+            if (!url.StartsWith("http://") && !url.StartsWith("https://"))
+            {
+                if (url.StartsWith("/"))
+                {
+                    url = "https://itch.io" + url;
+                }
+                else
+                {
+                    url = "https://itch.io/" + url;
+                }
+            }
 
             var result = new ItchioSearchResult
             {
@@ -259,6 +273,18 @@ namespace ItchioMetadata
                     string authorUrl = authorNode.GetAttributeValue("href", null);
                     if (!string.IsNullOrEmpty(authorUrl))
                     {
+                        // Normalize relative URLs
+                        if (!authorUrl.StartsWith("http://") && !authorUrl.StartsWith("https://"))
+                        {
+                            if (authorUrl.StartsWith("/"))
+                            {
+                                authorUrl = "https://itch.io" + authorUrl;
+                            }
+                            else
+                            {
+                                authorUrl = "https://itch.io/" + authorUrl;
+                            }
+                        }
                         metadata.Links.Add(new Link("Developer Page", authorUrl));
                     }
                 }
@@ -581,6 +607,24 @@ namespace ItchioMetadata
             {
                 logger.Error(ex, $"Failed to fetch URL: {url}");
                 return null;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposed)
+            {
+                if (disposing)
+                {
+                    httpClient?.Dispose();
+                }
+                disposed = true;
             }
         }
     }
