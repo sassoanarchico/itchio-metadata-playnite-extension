@@ -8,9 +8,7 @@ Grabs metadata from itch.io game pages - title, description, cover art, screensh
 
 ## Installation
 
-Build with `dotnet build -c Release` and copy the output to `%AppData%\Playnite\Extensions\`. Or use the install script.
-
-You can also pack it as .pext (just zip the dll + extension.yaml + icon.png).
+Build with `dotnet build -c Release` and copy the output to `%AppData%\Playnite\Extensions\`. Or download the pext from the [latest Release](https://github.com/sassoanarchico/itchio-metadata-playnite/releases/latest).
 
 ## Building
 
