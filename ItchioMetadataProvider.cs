@@ -173,7 +173,7 @@ namespace ItchioMetadata
                     return newResults.Select(r => new GenericItemOption(r.Title, r.Description)).ToList();
                 },
                 options.GameData.Name,
-                "Select itch.io game");
+                ResourceProvider.GetString("LOCItchioMetadata_SelectGameDialogTitle"));
 
             if (selectedItem != null)
             {
@@ -300,7 +300,7 @@ namespace ItchioMetadata
                     .ToList<ImageFileOption>();
 
                 var selected = plugin.GetPlayniteAPI().Dialogs.ChooseImageFile(
-                    imageOptions, "Select background image");
+                    imageOptions, ResourceProvider.GetString("LOCItchioMetadata_SelectBackgroundImageDialogTitle"));
 
                 if (selected != null)
                 {

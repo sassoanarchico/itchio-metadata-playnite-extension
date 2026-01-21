@@ -91,7 +91,7 @@ namespace ItchioMetadata
 
             if (MaxSearchResults < 1 || MaxSearchResults > 100)
             {
-                errors.Add("Max search results must be between 1 and 100");
+                errors.Add(ResourceProvider.GetString("LOCItchioMetadata_MaxSearchResultsValidation"));
             }
 
             return errors.Count == 0;

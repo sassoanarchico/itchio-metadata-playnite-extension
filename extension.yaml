@@ -1,7 +1,7 @@
 Id: ItchioMetadata_c7d4b7e9-8f1a-4b2c-9e3d-5f6a7b8c9d0e
 Name: itch.io Metadata Provider
 Author: sassoanarchico
-Version: 1.0.0
+Version: 1.1.0
 Module: ItchioMetadata.dll
 Type: MetadataProvider
 Icon: icon.png

@@ -7,26 +7,26 @@
              d:DesignHeight="300" d:DesignWidth="400">
     
     <StackPanel Margin="20">
-        <TextBlock Text="itch.io Metadata Provider Settings" 
+        <TextBlock Text="{DynamicResource LOCItchioMetadata_SettingsTitle}" 
                    FontSize="16" 
                    FontWeight="Bold" 
                    Margin="0,0,0,20"/>
 
-        <CheckBox Content="Prefer itch.io description over existing" 
+        <CheckBox Content="{DynamicResource LOCItchioMetadata_PreferDescription}" 
                   IsChecked="{Binding PreferItchioDescription}"
                   Margin="0,0,0,10"/>
 
-        <CheckBox Content="Download screenshots for background images" 
+        <CheckBox Content="{DynamicResource LOCItchioMetadata_DownloadScreenshots}" 
                   IsChecked="{Binding DownloadScreenshots}"
                   Margin="0,0,0,10"/>
 
-        <CheckBox Content="Automatically use first search result (background mode)" 
+        <CheckBox Content="{DynamicResource LOCItchioMetadata_PreferFirstSearchResult}" 
                   IsChecked="{Binding PreferFirstSearchResult}"
                   Margin="0,0,0,10"
-                  ToolTip="When enabled, the first search result will be used automatically during background metadata downloads"/>
+                  ToolTip="{DynamicResource LOCItchioMetadata_PreferFirstSearchResultTooltip}"/>
 
         <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
-            <TextBlock Text="Max search results:" 
+            <TextBlock Text="{DynamicResource LOCItchioMetadata_MaxSearchResultsLabel}" 
                        VerticalAlignment="Center"
                        Margin="0,0,10,0"/>
             <TextBox Text="{Binding MaxSearchResults}" 
@@ -34,7 +34,7 @@
                      VerticalAlignment="Center"/>
         </StackPanel>
 
-        <TextBlock Text="Note: This plugin scrapes data from itch.io game pages. Make sure to respect itch.io's terms of service." 
+        <TextBlock Text="{DynamicResource LOCItchioMetadata_SettingsNote}" 
                    TextWrapping="Wrap"
                    Foreground="Gray"
                    FontSize="11"

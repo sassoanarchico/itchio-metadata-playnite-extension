@@ -14,7 +14,7 @@ namespace ItchioMetadata
 
         public override Guid Id { get; } = Guid.Parse("c7d4b7e9-8f1a-4b2c-9e3d-5f6a7b8c9d0e");
 
-        public override string Name => "itch.io Metadata";
+        public override string Name => ResourceProvider.GetString("LOCItchioMetadata_Name");
 
         public override List<MetadataField> SupportedFields { get; } = new List<MetadataField>
         {

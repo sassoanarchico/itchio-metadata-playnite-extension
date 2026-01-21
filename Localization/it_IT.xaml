@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+  <!-- Generale / plugin -->
+  <sys:String x:Key="LOCItchioMetadata_Name">Metadati itch.io</sys:String>
+
+  <!-- Finestra impostazioni -->
+  <sys:String x:Key="LOCItchioMetadata_SettingsTitle">Impostazioni provider metadati itch.io</sys:String>
+  <sys:String x:Key="LOCItchioMetadata_PreferDescription">Preferisci la descrizione di itch.io a quella esistente</sys:String>
+  <sys:String x:Key="LOCItchioMetadata_DownloadScreenshots">Scarica gli screenshot come immagini di sfondo</sys:String>
+  <sys:String x:Key="LOCItchioMetadata_PreferFirstSearchResult">Usa automaticamente il primo risultato di ricerca (in background)</sys:String>
+  <sys:String x:Key="LOCItchioMetadata_PreferFirstSearchResultTooltip">Se abilitato, durante i download di metadati in background verrà usato automaticamente il primo risultato della ricerca</sys:String>
+  <sys:String x:Key="LOCItchioMetadata_MaxSearchResultsLabel">Numero massimo di risultati:</sys:String>
+  <sys:String x:Key="LOCItchioMetadata_SettingsNote">Nota: questo plugin recupera i dati dalle pagine dei giochi su itch.io. Assicurati di rispettare i termini di servizio di itch.io.</sys:String>
+
+  <!-- Titoli finestre di dialogo -->
+  <sys:String x:Key="LOCItchioMetadata_SelectGameDialogTitle">Seleziona il gioco da itch.io</sys:String>
+  <sys:String x:Key="LOCItchioMetadata_SelectBackgroundImageDialogTitle">Seleziona immagine di sfondo</sys:String>
+
+  <!-- Validazione / errori -->
+  <sys:String x:Key="LOCItchioMetadata_MaxSearchResultsValidation">Il numero massimo di risultati deve essere compreso tra 1 e 100</sys:String>
+
+  <!-- Formattazione scraper e etichette link -->
+  <sys:String x:Key="LOCItchioMetadata_ByAuthorFormat">di {0}</sys:String>
+  <sys:String x:Key="LOCItchioMetadata_DeveloperPageLink">Pagina dello sviluppatore</sys:String>
+  <sys:String x:Key="LOCItchioMetadata_LinkTwitter">Twitter</sys:String>
+  <sys:String x:Key="LOCItchioMetadata_LinkDiscord">Discord</sys:String>
+  <sys:String x:Key="LOCItchioMetadata_LinkGitHub">GitHub</sys:String>
+  <sys:String x:Key="LOCItchioMetadata_LinkYouTube">YouTube</sys:String>
+  <sys:String x:Key="LOCItchioMetadata_LinkSteam">Steam</sys:String>
+  <sys:String x:Key="LOCItchioMetadata_LinkWebsite">Sito web</sys:String>
+
+</ResourceDictionary>
+

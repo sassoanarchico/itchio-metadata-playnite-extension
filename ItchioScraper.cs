@@ -181,7 +181,8 @@ namespace ItchioMetadata
             // Add author to description for display
             if (!string.IsNullOrEmpty(result.Author))
             {
-                result.Description = $"by {result.Author}" +
+                var byAuthor = string.Format(ResourceProvider.GetString("LOCItchioMetadata_ByAuthorFormat"), result.Author);
+                result.Description = byAuthor +
                     (string.IsNullOrEmpty(result.Description) ? "" : $" - {result.Description}");
             }
 
@@ -285,7 +286,7 @@ namespace ItchioMetadata
                                 authorUrl = "https://itch.io/" + authorUrl;
                             }
                         }
-                        metadata.Links.Add(new Link("Developer Page", authorUrl));
+                        metadata.Links.Add(new Link(ResourceProvider.GetString("LOCItchioMetadata_DeveloperPageLink"), authorUrl));
                     }
                 }
             }
@@ -574,17 +575,17 @@ namespace ItchioMetadata
                     {
                         string linkName = text;
                         if (url.Contains("twitter.com") || url.Contains("x.com"))
-                            linkName = "Twitter";
+                            linkName = ResourceProvider.GetString("LOCItchioMetadata_LinkTwitter");
                         else if (url.Contains("discord"))
-                            linkName = "Discord";
+                            linkName = ResourceProvider.GetString("LOCItchioMetadata_LinkDiscord");
                         else if (url.Contains("github.com"))
-                            linkName = "GitHub";
+                            linkName = ResourceProvider.GetString("LOCItchioMetadata_LinkGitHub");
                         else if (url.Contains("youtube.com"))
-                            linkName = "YouTube";
+                            linkName = ResourceProvider.GetString("LOCItchioMetadata_LinkYouTube");
                         else if (url.Contains("steam"))
-                            linkName = "Steam";
+                            linkName = ResourceProvider.GetString("LOCItchioMetadata_LinkSteam");
                         else if (string.IsNullOrEmpty(linkName))
-                            linkName = "Website";
+                            linkName = ResourceProvider.GetString("LOCItchioMetadata_LinkWebsite");
 
                         if (!metadata.Links.Any(l => l.Url == url))
                         {
