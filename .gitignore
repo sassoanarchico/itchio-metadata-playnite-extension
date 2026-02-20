@@ -32,3 +32,15 @@ Thumbs.db
 desktop.ini
 
 *.txt
+
+# Scripts
+*.ps1
+*.bat
+*.sh
+
+# Temporary directories
+temp_*/
+~/
+err/
+dist/
+MyrientLibrary-extension/

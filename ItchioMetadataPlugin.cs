@@ -12,7 +12,7 @@ namespace ItchioMetadata
 
         private ItchioMetadataSettings settings { get; set; }
 
-        public override Guid Id { get; } = Guid.Parse("c7d4b7e9-8f1a-4b2c-9e3d-5f6a7b8c9d0e");
+        public override Guid Id { get; } = Guid.Parse("f4a5b6c7-d8e9-0123-fabc-4567890123de");
 
         public override string Name => ResourceProvider.GetString("LOCItchioMetadata_Name");
 
